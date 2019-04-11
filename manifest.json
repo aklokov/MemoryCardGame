@@ -3,11 +3,11 @@
   "short_name": "Memory card game",
   "theme_color": "#0098f3",
   "background_color": "#ffffff",
-  "display": "browser",
+  "display": "fullscreen",
   "orientation": "portrait",
-  "Scope": "/",
-  "start_url": "/",
-  "description": "Memory card game",
+  "Scope": "/MemoryCardGame/",
+  "start_url": "/MemoryCardGame/",
+  "description": "Memory Card Game",
   "icons": [],
   "splash_pages": null
 }
