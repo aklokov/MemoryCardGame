@@ -1,0 +1,13 @@
+{
+  "name": "Memory card game",
+  "short_name": "Memory card game",
+  "theme_color": "#0098f3",
+  "background_color": "#ffffff",
+  "display": "browser",
+  "orientation": "portrait",
+  "Scope": "/",
+  "start_url": "/",
+  "description": "Memory card game",
+  "icons": [],
+  "splash_pages": null
+}

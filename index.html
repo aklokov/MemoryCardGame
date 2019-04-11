@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Memory card game</title>
+    <meta charset="UTF-8" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        user-select: none;
+      }
+      body {
+        font-family: sans-serif;
+        background-color: rgb(226, 236, 240);
+      }
+
+      body,
+      body > div {
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+      }
+
+      body > div > div {
+        width: 320px;
+        display: flex;
+        justify-content: space-around;
+      }
+      body > div > div > span {
+        font-size: 40px;
+        color: red;
+      }
+      body > div > div > span:last-child {
+        color: blue;
+      }
+      td.open > div {
+        transform: rotateY(180deg);
+        -webkit-transform: rotateY(180deg);
+      }
+
+      td.current {
+        border: solid 1px black;
+      }
+
+      td > div > div:first-child {
+        background-color: grey;
+      }
+
+      td div {
+        pointer-events: none;
+      }
+
+      td > div > div {
+        display: table-cell;
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+
+        -webkit-perspective: 0;
+        -webkit-backface-visibility: hidden;
+        -webkit-transform: translate3d(0, 0, 0);
+        visibility: visible;
+        backface-visibility: hidden;
+      }
+
+      td > div > div:last-child {
+        transform: rotateY(180deg);
+      }
+
+      td > div {
+        height: 100%;
+        width: 100%;
+        transition: transform 1s;
+        transform-style: preserve-3d;
+        perspective: 600px;
+        -webkit-transform-style: preserve-3d;
+      }
+
+      td {
+        height: 80px;
+        width: 80px;
+        text-align: center;
+        font-size: 70px;
+        border: solid 1px transparent;
+      }
+      button {
+        height: 28px;
+        font-size: 13px;
+        margin: 20px;
+        opacity: 0.6;
+      }
+
+      ul {
+        list-style-type: none;
+        font-size: 12px;
+        font-style: italic;
+        opacity: 0.3;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h3>Memory card game</h3>
+    <div id="app"></div>
+
+    <script>
+      var app = document.getElementById("app");
+
+      var DIMMENSION = 4;
+      var CONTENT = [
+        "😀",
+        "😈",
+        "👺",
+        "💀",
+        "👻",
+        "👽",
+        "🤖",
+        "💩",
+        "😀",
+        "😈",
+        "👺",
+        "💀",
+        "👻",
+        "👽",
+        "🤖",
+        "💩"
+      ];
+      var timerHandler;
+
+      //init
+      game(app);
+
+      function game(app) {
+        var selection = undefined;
+        var counter = 0;
+        var clickCount = 0;
+        app.innerHTML = "";
+        var scoreData = [];
+
+        //timer and score
+        var statWrapper = document.createElement("div");
+        var timer = document.createElement("span");
+        timer.innerHTML = formatTimer(0);
+        statWrapper.appendChild(timer);
+        var score = document.createElement("span");
+        score.id = "score";
+        score.innerHTML = clickCount;
+        statWrapper.appendChild(score);
+        app.appendChild(statWrapper);
+        clearTimeout(timerHandler);
+        timerHandler = undefined;
+        var timerStarter = function() {
+          if (!timerHandler) {
+            timerHandler = setInterval(
+              function(timer, start) {
+                timer.innerHTML = formatTimer((Date.now() - start) / 1000);
+              },
+              1000,
+              timer,
+              Date.now()
+            );
+          }
+        };
+
+        //main table
+        var content = shuffleContent(CONTENT); //for test use CONTENT
+        var tbl = document.createElement("table");
+        tbl.id = "game";
+        for (var line = 0; line < DIMMENSION; line++) {
+          var tr = document.createElement("tr");
+          for (var col = 0; col < DIMMENSION; col++) {
+            var td = document.createElement("td");
+            var tdInner = document.createElement("div");
+            var tdFront = document.createElement("div");
+            var tdBack = document.createElement("div");
+
+            tdBack.innerHTML = content[line * DIMMENSION + col];
+            tdInner.appendChild(tdFront);
+            tdInner.appendChild(tdBack);
+            td.appendChild(tdInner);
+            td.addEventListener("click", function(ev) {
+              timerStarter();
+              if (
+                ev.target.className === "open" ||
+                ev.target.className === "open current"
+              ) {
+                //do nothing if cell is open already
+                return;
+              }
+
+              clickCount++;
+              var score = document.getElementById("score");
+              score.innerHTML = clickCount;
+
+              if (selection) {
+                if (selection.innerHTML === ev.target.innerHTML) {
+                  ev.target.className = "open";
+                  selection.className = "open";
+
+                  counter++;
+                  //check if win
+                  if (counter === (DIMMENSION * DIMMENSION) / 2) {
+                    clearTimeout(timerHandler);
+                    timerHandler = undefined;
+                    setTimeout(function() {
+                      alert("WIN " + clickCount + " clicks");
+                    }, 500);
+                    scoreData.push({
+                      clickCount: clickCount,
+                      date: Date.now(),
+                      time: timer.innerHTML
+                    });
+                    localStorage.setItem("score", JSON.stringify(scoreData));
+                  }
+                } else {
+                  ev.target.className = "open";
+                  setTimeout(
+                    function(param1, param2) {
+                      param1.className = "";
+                      param2.className = "";
+                    },
+                    750,
+                    ev.target,
+                    selection
+                  );
+                }
+                selection = undefined;
+              } else {
+                selection = ev.target;
+                ev.target.className = "open current";
+              }
+            });
+            tr.appendChild(td);
+          }
+          tbl.appendChild(tr);
+        }
+
+        app.appendChild(tbl);
+
+        //reset button
+        var reset = document.createElement("button");
+        reset.innerHTML = "Reset";
+        reset.addEventListener("click", function() {
+          game(app);
+        });
+        app.appendChild(reset);
+
+        //history
+        scoreData = localStorage.getItem("score");
+        if (scoreData) {
+          scoreData = JSON.parse(scoreData);
+        } else {
+          scoreData = [];
+        }
+        var historyWrapper = document.createElement("ul");
+        scoreData
+          .slice()
+          .reverse()
+          .forEach(function(data) {
+            var history = document.createElement("li");
+            history.innerHTML =
+              new Date(data.date).toLocaleString() +
+              " clicks:" +
+              data.clickCount +
+              " time:" +
+              data.time;
+            historyWrapper.appendChild(history);
+          });
+
+        app.appendChild(historyWrapper);
+      }
+
+      function shuffleContent(array) {
+        var currentIndex = array.length;
+        var temporaryValue, randomIndex;
+
+        while (0 !== currentIndex) {
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex -= 1;
+          temporaryValue = array[currentIndex];
+          array[currentIndex] = array[randomIndex];
+          array[randomIndex] = temporaryValue;
+        }
+        return array;
+      }
+
+      function formatTimer(timer) {
+        var sec_num = parseInt(timer, 10);
+        var hours = Math.floor(sec_num / 3600);
+        var minutes = Math.floor((sec_num - hours * 3600) / 60);
+        var seconds = sec_num - hours * 3600 - minutes * 60;
+        if (hours < 10) {
+          hours = "0" + hours;
+        }
+        if (minutes < 10) {
+          minutes = "0" + minutes;
+        }
+        if (seconds < 10) {
+          seconds = "0" + seconds;
+        }
+        return hours + ":" + minutes + ":" + seconds;
+      }
+    </script>
+  </body>
+</html>
