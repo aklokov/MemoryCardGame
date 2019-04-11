@@ -11,7 +11,21 @@
       }
       body {
         font-family: sans-serif;
-        background-color: rgb(226, 236, 240);
+        background: linear-gradient(
+          -45deg,
+          #ee765283,
+          #e73c7e83,
+          #23a6d583,
+          #29887283,
+          #339caa83,
+          #ee3d1e83,
+          #ec1df383
+        );
+        background-size: 400% 400%;
+        -webkit-animation: Gradient 15s ease infinite;
+        -moz-animation: Gradient 15s ease infinite;
+        animation: Gradient 15s ease infinite;
+        
       }
 
       body,
@@ -98,6 +112,42 @@
         font-size: 12px;
         font-style: italic;
         opacity: 0.3;
+      }
+      
+      @-webkit-keyframes Gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      @-moz-keyframes Gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      @keyframes Gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
       }
     </style>
   </head>
